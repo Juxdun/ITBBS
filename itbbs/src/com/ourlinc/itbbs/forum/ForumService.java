@@ -1,0 +1,193 @@
+package com.ourlinc.itbbs.forum;
+
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
+import com.ourlinc.itbbs.user.User;
+import com.ourlinc.tern.ResultPage;
+/**
+ * 论坛Service
+ * @author 陈洁民
+ *
+ */
+public interface ForumService {
+	/**
+	 * 发表话题
+	 * @param name 话题名
+	 * @param content 话题内容
+	 * @param user 发表人
+	 * @return
+	 */
+	Topic createTopic(String name, String content, User user);
+	
+	/**
+	 * 取话题
+	 * @param id 话题id
+	 * @return
+	 */
+	Topic getTopic(String id);
+
+	/**
+	 * 取话题列表
+	 * @param status 话题状态
+	 * @param user 用户
+	 * @param date 时间
+	 * @param tagId 标签id
+	 * @param comparator 比较器
+	 * @return
+	 */
+	ResultPage<Topic> searchTopics(int status,User user,Date date,String tagId,Comparator<Topic> comparator);
+
+	/**
+	 * 取话题列表
+	 * @param status 话题状态
+	 * @param user 用户
+	 * @return
+	 */
+	ResultPage<Topic> searchTopics(int status,User user);
+		
+	/**
+	 * 取评论列表
+	 * @param status 评论状态
+	 * @param user 评论者
+	  * @param topicUser 话题作者
+	 * @return
+	 */
+	ResultPage<Comment> searchComments(int status,User user,User topicUser);
+	
+	/**
+	 * 取评论列表
+	 * @param status 评论状态
+	 * @param id 话题id
+	 * @param comparator 比较器
+	 * @return
+	 */
+	ResultPage<Comment> searchComments(int status,String id,Comparator<Comment> comparator);
+	
+	/**
+	 * 取评论
+	 * @param id 
+	 * @return
+	 */
+	Comment getComment(String id);
+
+	/**
+	 * 取回复列表
+	 * @param status 回复状态
+	 * @param user 评论者
+	 * @param target 评论目标
+	 * @param topicUser 话题作者
+	 * @return
+	 */
+	ResultPage<Reply> searchReplies(int status,User user,User target,User topicUser);
+	
+	/**
+	 * 取回复列表
+	 * @param status 回复状态
+	 * @param user 评论者
+	 * @param target 评论目标
+	 * @param topicUser 话题作者
+	 * @return
+	 */
+	ResultPage<Reply> searchReplies(int status,String id,Comparator<Reply> comparator);
+	
+	/**
+	 * 取回复
+	 * @param id
+	 * @return
+	 */
+	Reply getReply(String id);
+	
+	/**
+	 * 取我的评论列表
+	 * @param status 回复状态
+	 * @param user 评论者
+	 * @return
+	 */
+	ResultPage<CommentReply> myComment(int status,User user);
+	
+	/**
+	 * 取我的消息列表
+	 * @param status 回复状态
+	 * @param user 评论者
+	 * @return
+	 */
+	ResultPage<CommentReply> myMessage(int status,User user);
+
+	/**
+	 * 点赞
+	 * @param user 用户
+	 * @param topic 话题
+	 * @return 
+	 */
+	Favor createFavor(User user, Topic topic);
+	
+	/**取某一条收藏
+	 * @param user 用户
+	 * @param topic 话题
+	 * @return 用户的收藏列表
+	 */
+	public Favor getFavor(User user, Topic topic);
+
+	/**
+	 * 取收藏列表
+	 * @param status 收藏状态
+	 * @param user 用户
+	 * @return
+	 */
+	ResultPage<Favor> searchFavors(int status,User user,Topic topic);
+
+	/**
+	 * 收藏
+	 * @param user 用户
+	 * @param topic 话题
+	 * @return 
+	 */
+	Praise createPraise(User user, Topic topic);
+
+	/**
+	 * 取点赞列表
+	 * @param status 点赞状态
+	 * @param user 用户
+	 * @return
+	 */
+	ResultPage<Praise> searchPraises(int status,User user,Topic topic);
+	
+	/**
+	 * 取一条点赞
+	 * @param user 用户
+	 * @param topic 话题 
+	 * @return
+	 */
+	public Praise getPraise(User user, Topic topic);
+
+	/**
+	 * 创建标签
+	 * @param parentTag 父标签
+	 * @param name 标签名
+	 * @return
+	 */
+	Tag createTag(Tag parentTag, String name,User user);
+	
+	/**
+	 * 取标签
+	 * @param id 标签id
+	 * @return
+	 */
+	Tag getTag(String id);
+	
+	/**
+	 * 取标签列表
+	 * @param status 标签状态
+	 * @return
+	 */
+	ResultPage<Tag> searchTags(int status);
+	
+	/**
+	 * 取根标签列表
+	 * @param status 标签状态
+	 * @return
+	 */
+	List<Tag> searchRootTags(int status);
+}

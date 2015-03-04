@@ -1,0 +1,434 @@
+package com.ourlinc.itbbs.controller;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.ourlinc.itbbs.forum.Comment;
+import com.ourlinc.itbbs.forum.CommentReply;
+import com.ourlinc.itbbs.forum.Favor;
+import com.ourlinc.itbbs.forum.ForumService;
+import com.ourlinc.itbbs.forum.Reply;
+import com.ourlinc.itbbs.forum.Tag;
+import com.ourlinc.itbbs.forum.Topic;
+import com.ourlinc.itbbs.user.User;
+import com.ourlinc.itbbs.user.UserService;
+import com.ourlinc.tern.ResultPage;
+import com.ourlinc.tern.ext.ResultPages;
+import com.ourlinc.web.util.ServletUtils;
+
+@Controller
+public class UserController {
+	
+	public final static Logger _Logger = LoggerFactory.getLogger(UserController.class);
+	
+	@Resource(name="userService")
+	private UserService m_UserSerive;
+	
+	@Resource(name="forumService")
+	private ForumService m_ForumSerive;
+	
+	@RequestMapping
+	String logout(HttpServletRequest request,HttpServletResponse response){
+		request.getSession().setAttribute("own", null);
+		ServletUtils.sendRedirect("/index.jspx", request, response);
+		return null;	
+		
+	}
+	
+	@RequestMapping
+	String writeforum(HttpServletRequest request,HttpServletResponse response){		
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		String name = ServletUtils.inputValToString(request.getParameter("name"));
+		String content = ServletUtils.inputValToString(request.getParameter("content"));
+		if("write".equals(op)){
+			String [] tagsId = request.getParameterValues("tags");
+			List<String> tags = null;
+			if(null!=tagsId&&tagsId.length>0){
+				tags = new ArrayList<String>();
+				for(String tagId : tagsId){
+					tags.add(tagId);
+				}
+			}
+			User user = (User)request.getSession().getAttribute("own");
+			Topic topic = user.createTopic(name, content, tags);
+			//TODO
+			if(null==topic){
+				
+			}
+			ServletUtils.sendRedirect("/index.jspx", request, response);
+		}
+		ResultPage<Tag> tags = m_ForumSerive.searchTags(Tag.STATUS_NORMAL.id);
+		if(tags.getCount()>0){
+			tags.setPageSize(tags.getCount());
+			tags.gotoPage(1);
+			request.setAttribute("tags", tags);
+		}
+		return "user/writeforum";
+	}
+	@RequestMapping
+	String editforum(HttpServletRequest request,HttpServletResponse response) throws IOException{
+		User own = (User)request.getSession().getAttribute("own");
+		String id = ServletUtils.inputValToString(request.getParameter("id"));
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		Topic topic = m_ForumSerive.getTopic(id);
+		if(!topic.getUser().getId().getId().equals(own.getId().getId())){
+			request.setAttribute("error", "不能修改别人的话题");
+			response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+		}
+		if("edit".equals(op)){
+			String name = ServletUtils.inputValToString(request.getParameter("name"));
+			String content = ServletUtils.inputValToString(request.getParameter("content"));
+			String [] tagsId = request.getParameterValues("tags");
+			List<String> tags = null;
+			if(null!=tagsId&&tagsId.length>0){
+				tags = new ArrayList<String>();
+				for(String tagId : tagsId){
+					tags.add(tagId);
+				}
+			}
+			topic.setTags(tags);
+			topic.setName(name);
+			topic.changeContent(content);
+			ServletUtils.sendRedirect("/viewforum.jspx?id="+topic.getId().getId(), request, response);
+		}
+		request.setAttribute("topic", topic);
+		ResultPage<Tag> tags = m_ForumSerive.searchTags(Tag.STATUS_NORMAL.id);
+		if(tags.getCount()>0){
+			tags.setPageSize(tags.getCount());
+			tags.gotoPage(1);
+			request.setAttribute("tags", tags);
+		}
+		
+		return "user/editforum";
+	}
+	@RequestMapping
+	String myforum(HttpServletRequest request,HttpServletResponse response){
+		User user = (User)request.getSession().getAttribute("own");
+		int p = ServletUtils.inputValToInt(request.getParameter("p"), 1);
+		ResultPage<Topic> topics = user.getTopics();
+		topics.gotoPage(p);
+		request.setAttribute("topics", topics);
+		request.setAttribute("p", p);
+		request.setAttribute("user", m_UserSerive.getUser(user.getId().getId()));
+		return "user/myforum";
+	}
+	@RequestMapping
+	String writecomment(HttpServletRequest request,HttpServletResponse response){
+		/*ResultPage<Topic> topics = m_ForumSerive.searchTopics(Topic.STATUS_NORMAL.id, null, Topic.ORDER_MOST_NEW);
+		topics.gotoPage(1);
+		Topic topic = topics.next();
+		topic.createComment("hello", m_UserSerive.login("admin", "admin"));
+		topic.createComment("world", m_UserSerive.login("admin", "admin"));*/
+		String id =ServletUtils.inputValToString(request.getParameter("id"));
+		String content =ServletUtils.inputValToString(request.getParameter("content"));
+		User own = (User)request.getSession().getAttribute("own");
+		Topic topic = m_ForumSerive.getTopic(id);
+		topic.createComment(content, own);
+		request.setAttribute("topic", topic);
+		ServletUtils.sendRedirect("/viewforum.jspx?id="+id, request, response);
+		return null;
+	}
+	
+	@RequestMapping
+	String writereply(HttpServletRequest request,HttpServletResponse response){
+		String id =ServletUtils.inputValToString(request.getParameter("id"));
+		String targetId =ServletUtils.inputValToString(request.getParameter("targetId"));
+		String content =ServletUtils.inputValToString(request.getParameter("content"));
+		User own = (User)request.getSession().getAttribute("own");
+		Comment comment = m_ForumSerive.getComment(id);
+		comment.createReply(own, m_UserSerive.getUser(targetId), content);
+		ServletUtils.sendRedirect("/viewforum.jspx?id="+comment.getTopic().getId().getId(), request, response);
+		return null;
+	}
+	
+	@RequestMapping
+	String info(HttpServletRequest request,HttpServletResponse response){
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		User own = (User)request.getSession().getAttribute("own");
+		if("edit".equals(op)){
+			String phone = ServletUtils.inputValToString(request.getParameter("phone"));
+			String oldPassword = ServletUtils.inputValToString(request.getParameter("oldPassword"));
+			String newPassword = ServletUtils.inputValToString(request.getParameter("newPassword"));
+			String nickname = ServletUtils.inputValToString(request.getParameter("nickname"));
+			String qq = ServletUtils.inputValToString(request.getParameter("qq"));
+			String highestEducation = ServletUtils.inputValToString(request.getParameter("highestEducation"));
+			String graduateSchool = ServletUtils.inputValToString(request.getParameter("graduateSchool"));
+			String position = ServletUtils.inputValToString(request.getParameter("position"));
+			String signature = ServletUtils.inputValToString(request.getParameter("signature"));
+			User user = m_UserSerive.getUser(own.getId().getId());
+			user.setGraduateSchool(graduateSchool);
+			user.setHighestEducation(highestEducation);
+			user.setNickname(nickname);
+			user.setPhone(phone);
+			user.setPosition(position);
+			user.setQQ(qq);
+			user.setSignature(signature);
+			if(!oldPassword.equals("")&&!newPassword.equals("")){
+				//TODO
+				user.changePassword(null, newPassword, oldPassword);
+			}
+		}
+		//User admin = m_UserSerive.login("admin", "admin");
+		request.setAttribute("user", m_UserSerive.getUser(own.getId().getId()));
+		return "user/info";
+	}
+	@RequestMapping
+	String praise(HttpServletRequest request,HttpServletResponse response){
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		String id = ServletUtils.inputValToString(request.getParameter("id"));
+		User user = (User)request.getSession().getAttribute("own");
+		if("praise".equals(op)){
+			user.praise(m_ForumSerive.getTopic(id));
+		}
+		if("cancelpraise".equals(op)){
+			user.cancelPraise(m_ForumSerive.getTopic(id));
+		}
+		return null;
+	}
+	@RequestMapping
+	String favor(HttpServletRequest request,HttpServletResponse response){
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		String id = ServletUtils.inputValToString(request.getParameter("id"));
+		User user = (User)request.getSession().getAttribute("own");
+		request.setAttribute("user", m_UserSerive.getUser(user.getId().getId()));
+		if("favor".equals(op)){
+			user.favor(m_ForumSerive.getTopic(id));
+		}
+		if("cancelfavor".equals(op)){
+			user.cancelfavor(m_ForumSerive.getTopic(id));
+		}
+		return "user/myfavor";
+	}
+	@RequestMapping
+	String myfavor(HttpServletRequest request,HttpServletResponse response){
+		User user = (User)request.getSession().getAttribute("own");
+		int p = ServletUtils.inputValToInt(request.getParameter("p"), 1);
+		ResultPage<Favor> favors = user.getFavors();
+		favors.gotoPage(p);
+		request.setAttribute("favors", favors);
+		request.setAttribute("p", p);
+		request.setAttribute("user", m_UserSerive.getUser(user.getId().getId()));
+		return "user/myfavor";
+	}
+	@RequestMapping
+	String mycomment(HttpServletRequest request,HttpServletResponse response){
+		User own = (User)request.getSession().getAttribute("own");
+		int p = ServletUtils.inputValToInt(request.getParameter("p"), 1);
+		own = m_UserSerive.getUser(own.getId().getId());
+		ResultPage<Comment> comments =own.getComments();
+		ResultPage<Reply> replies = own.getReplies();
+		List<CommentReply> crs = new ArrayList<CommentReply>();
+		if(comments.getCount()>0){
+			comments.setPageSize(comments.getCount());
+			comments.gotoPage(1);
+			for(Comment comment : comments){
+				CommentReply cr = new CommentReply();
+				cr.setComment(comment);
+				cr.setDate(comment.getDate());
+				cr.setType(CommentReply.TYPE_COMMENT.id);
+				crs.add(cr);
+			}
+		}
+		if(replies.getCount()>0){
+			replies.setPageSize(replies.getCount());
+			replies.gotoPage(1);
+			for(Reply reply : replies){
+				CommentReply cr = new CommentReply();
+				cr.setReply(reply);
+				cr.setDate(reply.getDate());
+				cr.setType(CommentReply.TYPE_REPLY.id);
+				crs.add(cr);
+			}
+		}
+		ResultPage<CommentReply> rp = ResultPages.toResultPage(crs, CommentReply.ORDER_MOST_NEW);
+		rp.gotoPage(p);
+		request.setAttribute("mycomment",rp );
+		request.setAttribute("p", p);
+		request.setAttribute("user", own);
+		return "user/mycomment";
+	}
+	@RequestMapping
+	String mymessage(HttpServletRequest request,HttpServletResponse response){
+		User own = (User)request.getSession().getAttribute("own");
+		int p = ServletUtils.inputValToInt(request.getParameter("p"), 1);
+		own = m_UserSerive.getUser(own.getId().getId());
+		ResultPage<Comment> comments =m_ForumSerive.searchComments(Comment.STATUS_NORMAL.id, null,own);
+		ResultPage<Reply> replies = m_ForumSerive.searchReplies(Reply.STATUS_NORMAL.id, null,own,null);
+		List<CommentReply> crs = new ArrayList<CommentReply>();
+		if(comments.getCount()>0){
+			comments.setPageSize(comments.getCount());
+			comments.gotoPage(1);
+			for(Comment comment : comments){
+				CommentReply cr = new CommentReply();
+				cr.setComment(comment);
+				cr.setDate(comment.getDate());
+				cr.setType(CommentReply.TYPE_COMMENT.id);
+				crs.add(cr);
+			}
+		}
+		if(replies.getCount()>0){
+			replies.setPageSize(replies.getCount());
+			replies.gotoPage(1);
+			for(Reply reply : replies){
+				CommentReply cr = new CommentReply();
+				cr.setReply(reply);
+				cr.setDate(reply.getDate());
+				cr.setType(CommentReply.TYPE_REPLY.id);
+				crs.add(cr);
+			}
+		}
+		ResultPage<CommentReply> rp = ResultPages.toResultPage(crs, CommentReply.ORDER_MOST_NEW);
+		rp.gotoPage(p);
+		request.setAttribute("mymessage",rp );
+		request.setAttribute("p", p);
+		request.setAttribute("user", own);
+		return "user/mymessage";
+	}
+	@RequestMapping
+	String editcomment(HttpServletRequest request,HttpServletResponse response){
+		User own = (User)request.getSession().getAttribute("own");
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		String type = ServletUtils.inputValToString(request.getParameter("type"));
+		String id = ServletUtils.inputValToString(request.getParameter("id"));
+		own = m_UserSerive.getUser(own.getId().getId());
+		if("".equals(op)){
+			if("comment".equals(type)){
+				Comment comment = m_ForumSerive.getComment(id);
+				request.setAttribute("comment", comment);
+			}else{
+				Reply reply = m_ForumSerive.getReply(id);
+				request.setAttribute("reply", reply);
+			}
+		}else if("edit".equals(op)){
+			String content = ServletUtils.inputValToString(request.getParameter("content"));
+			if("comment".equals(type)){
+				Comment comment = m_ForumSerive.getComment(id);
+				comment.setContent(content);
+			}else{
+				Reply reply = m_ForumSerive.getReply(id);
+				reply.setContent(content);
+			}
+			ServletUtils.sendRedirect("/user/mycomment.jspx", request, response);
+		}
+		request.setAttribute("type", type);
+		return "user/editcomment";
+	}
+	//TODO DELETE
+	@RequestMapping
+	String testtag(HttpServletRequest request,HttpServletResponse response){
+		User user = m_UserSerive.login("admin", "admin");
+		Tag tag = user.createTag(null, "IT");
+		Tag tag1 = user.createTag(tag, "JAVA");
+		user.createTag(tag, "C++");
+		user.createTag(tag1, "JSP");
+		List<Tag> tags = m_ForumSerive.getTag(tag.getId().getId()).getChildrenTag();
+		/*for(Tag t : tags){
+			_Logger.info(t.getId().getId());
+			_Logger.info(t.getName());
+			_Logger.info(t.getParent()+"");
+		}*/
+		request.setAttribute("tags", tags);
+		return "test";
+		
+	}
+	
+	/**
+	 * 用户管理
+	 */
+	@RequestMapping
+	String manageuser(HttpServletRequest request, HttpServletResponse response){
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		ResultPage<User> list;
+		User admin = (User)request.getSession().getAttribute("own");
+		String userId = ServletUtils.inputValToString(request.getParameter("userId"));
+		User u = m_UserSerive.getUser(userId);
+		if("registerUser".equals(op)){	// 注册用户
+			String username = ServletUtils.inputValToString(request.getParameter("name"));
+			String password = ServletUtils.inputValToString(request.getParameter("psw"));
+			if (null!=admin) {
+				m_UserSerive.RegisterUser(admin, username, password);
+			}else{
+				request.setAttribute("warning", "请登录");
+			}
+		}else if ("setTrainingDate".equals(op)) {	// 设置培训日期
+			Date date = ServletUtils.inputValToDate(request.getParameter("date"));
+			u.installTrainingDate(admin, date);
+		}else if ("blacklist".equals(op)) {	// 拉黑用户
+			u.blacklist(admin);
+		}else if ("recover".equals(op)) {	// 取消拉黑
+			u.recover(admin);
+		}else if ("getBackPwd".equals(op)) {	// 找回密码
+			String pwd = ServletUtils.inputValToString(request.getParameter("pwd"));
+			u.changePassword(admin, pwd, null);
+		}
+		list = admin.getUsers(0);
+		list.setPageSize(list.getCount());
+		list.gotoPage(1);
+		request.setAttribute("users", list);
+		return "user/manageuser";
+	}
+	
+	/**
+	 * 标签管理
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping
+	String managetag(HttpServletRequest request,HttpServletResponse response){
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		ResultPage<Tag> tags;
+		User admin = (User)request.getSession().getAttribute("own");
+		if("add".equals(op)){	// 添加标签
+			String name = ServletUtils.inputValToString(request.getParameter("name"));
+			String parentId = ServletUtils.inputValToString(request.getParameter("parent"));
+			if (null!=admin) {
+				//TODO
+				admin.createTag(m_ForumSerive.getTag(parentId), name);
+			}else{
+				request.setAttribute("warning", "请登录");
+			}
+		}else if ("delete".equals(op)) {	// 删除标签
+			String id = ServletUtils.inputValToString(request.getParameter("id"));
+			m_ForumSerive.getTag(id).delete(admin);
+		}
+		tags =  m_ForumSerive.searchTags(Tag.STATUS_NORMAL.id);
+		tags.setPageSize(tags.getCount());
+		tags.gotoPage(1);
+		request.setAttribute("tags", tags);
+		return "user/managetag";
+	}
+	
+	/**
+	 * 评论管理
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping
+	String managecomment(HttpServletRequest request,HttpServletResponse response){
+		String op = ServletUtils.inputValToString(request.getParameter("op"));
+		ResultPage<Comment> list;
+		if ("searchComment".equals(op)) {
+			String username = ServletUtils.inputValToString(request.getParameter("username"));
+			String topic = ServletUtils.inputValToString(request.getParameter("topic"));
+			User user = m_UserSerive.getUserByName(0, username);
+			list = m_ForumSerive.searchComments(0, user, null);
+			list.setPageSize(list.getCount());
+			list.gotoPage(1);
+			request.setAttribute("tags", list);
+		}
+		return "user/managecomment";
+	}
+}

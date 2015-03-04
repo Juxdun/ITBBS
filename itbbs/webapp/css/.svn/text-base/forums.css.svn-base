@@ -1,0 +1,25 @@
+
+.pager{
+	margin:2em;
+}
+.pager a{
+	text-decoration:none;
+	display:inline-block;
+	line-height:14px;
+	padding:6px 12px;
+	color:#007b9c;
+	border:1px solid #007b9c;
+	margin:0 2px;
+}
+.pager a:hover,.pager a.on{
+	background:#007b9c;
+	color:#fff;
+	border:1px solid #007b9c;
+	}
+.pager a.unclick,.pager a.unclick:hover{
+	background:none;
+	border:1px solid #007b9c;
+	color:#007b9c;
+	cursor:default;
+	}
+

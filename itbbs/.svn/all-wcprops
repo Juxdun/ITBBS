@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/1908/team/20141209/CLOgroup/itbbs
+END
+.classpath
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1561/team/20141209/CLOgroup/itbbs/.classpath
+END
+logback.xml
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1561/team/20141209/CLOgroup/itbbs/logback.xml
+END
+webdefault.xml
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/1561/team/20141209/CLOgroup/itbbs/webdefault.xml
+END
+.project
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/1561/team/20141209/CLOgroup/itbbs/.project
+END
+jetty.xml
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/1561/team/20141209/CLOgroup/itbbs/jetty.xml
+END

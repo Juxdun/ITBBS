@@ -1,0 +1,90 @@
+/**
+ * 标签管理对应的css
+ */
+
+thead{
+		color: green;
+<<<<<<< .mine
+=======
+		font-size: 1em;
+>>>>>>> .r1848
+		padding-top: 5px;
+		padding-bottom: 4px;
+		background-color: #A1CF64;
+}
+.tabler tbody{
+		color: blue;
+		font-size: 0.5em;
+		border: 1px solid #98bf21;
+		padding: 3px 7px 2px 7px;
+}
+table{
+		border-collapse: collapse;	
+}
+.tabler th,.tabler td{
+		border: 1px solid #98bf21;
+		padding: 3px 3px 2px 3px;
+		
+}
+.td-height{
+height:40px;
+}
+
+/* 第一层，容器 */
+.former{
+	
+	margin: auto;
+	width: 98%;
+	margin-top:20px;
+	margin-bottom:80px;
+}
+/* 第二层，表单、表格 */
+.container .former{
+	padding: 3px 3px 3px 3px;
+}
+
+table.tabler{
+	width: 100%;
+    margin-top: 10px;
+}
+
+/* 第三层，标题 */
+.buttontofloat{
+	float:left;
+	margin-left:10px;
+}
+
+/*input的高度*/
+.input-height{
+   width:153px;
+   height:30px;
+}
+
+.a-margin{
+margin-left:10px;
+}
+
+/*managecomment.jsp的样式*/
+.form-float{
+	float:left;
+	margin-left:20px;
+}
+.margin-bottom-40{
+margin-bottom:40px;
+}
+
+.labelDiv{
+	position:absolute;
+	left:500px;
+	top:223px;
+	background-color: #E8F2FE;
+	width:410px;
+	height:auto;
+	border-radius:7px;
+	z-index:10000;display:none;padding-bottom:30px;
+	margin-bottom:2px;
+}
+.labelTable td{
+	padding: 2px 14px;
+	color: #96904D;
+}

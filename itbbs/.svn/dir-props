@@ -1,0 +1,10 @@
+K 10
+svn:ignore
+V 46
+*.classpath
+.classpath
+.settings
+bin
+itbbs.db
+
+END

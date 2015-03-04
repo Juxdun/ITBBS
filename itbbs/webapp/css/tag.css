@@ -1,0 +1,113 @@
+/*
+ * 标签汇 与 后台标签管理使用
+ */
+
+/* 页面内容body（每个页面分三层，header、body、footer，这里就是body部分的div样式） */
+.bodycontent {
+	width: 980px;
+	margin: auto;
+	overflow: hidden;
+}
+.showarea{
+	/*background-color: #FCFCFC;*/
+	 border-radius: 0.325em 0.325em 0.325em 0.325em;
+	 height: auto;
+	 margin: 14px auto 0;
+	 padding: 14px;
+	 width: 952px;
+	 float: left;
+}
+.entry{
+	margin: 3px;
+	padding: 3px 21px;
+	border-radius: 0.325em 0.325em 0.325em 0.325em;
+	color: #4D8796;
+	background-color: #E6F4F9;
+	border: 1px solid #CFDBE0;
+	float: left;
+	width:108px;
+}
+
+.tags-container{
+	margin:20px;
+	min-height:1000px;
+	background:#fff;
+}
+
+.tag{
+	width:1008px;
+	margin: auto;
+	overflow: hidden;
+}
+
+/*标签背景块，两边外边距为0，中间的左右外边距为14px*/
+.tag .background{
+	width:289px;
+	margin: 14px 0 0 14px;
+	padding: 14px;
+	border-radius: 0.325rem;
+	height: auto;
+	float: left;
+	background-color: #FCFCFC;
+	color: #96904D;
+}
+
+/*标签样式与颜色表*/
+.tag .entity{
+	/*渐变*/
+	/*box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);*/
+	display: inline-block;
+	margin: 7px auto;
+	padding: 7px 21px;
+	border-radius: 0.325rem;
+	height: auto;
+	color: #FFFFFF;
+	border: 1px solid #CFDBE0;
+}
+.tag .css0{
+	background-color: #F6F3D5;
+	color:#96904D
+}
+.tag .css1{
+	background-color: #F1D7D7;
+	color:#A95252
+}
+.tag .css2{
+	/*渐变*/
+ 	/*background-color: #569E3D;
+    background-image: linear-gradient(#79D858, #569E3D);*/
+	background-color: #DEFCD5;
+	color:#52A954
+}
+.tag .css3{
+	/*渐变*/
+	/*background-color: #3072B3;
+    background-image: linear-gradient(#599BDC, #3072B3);*/
+	background-color: #E6F4F9;
+	color:#4D8796;
+}
+.tag .css4{
+	background-color: #A1CF64;
+}
+/*标签分支*/
+.tag .branch{
+	border-left: 1px dashed #CCCCCC;
+	margin-left: 35px
+}
+/*标签右侧操作*/
+.tag .option{
+	float: right;
+	height:47px;
+	line-height: 47px;
+}
+
+.other-tag {
+  background-color: #defcd5;
+  border: 1px solid #cfdbe0;
+  border-radius: 0.325rem;
+  color: #52a954;
+  display: inline-block;
+  height: auto;
+  margin: 2px auto;
+  padding: 2px 12px;
+}
